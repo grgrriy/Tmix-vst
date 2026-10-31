@@ -1,0 +1,55 @@
+name: Build T-Mix macOS installer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Checkout T-Mix
+        uses: actions/checkout@v4
+
+      - name: Install CMake
+        run: brew install cmake
+
+      - name: Fetch JUCE
+        run: git clone --depth 1 --branch 8.0.6 https://github.com/juce-framework/JUCE.git JUCE
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          ART="build/TMix_artefacts/Release"
+          mkdir -p packaging/stage dist
+          VST3="$(find "$ART" -name 'T-Mix.vst3' -type d -print -quit)"
+          AU="$(find "$ART" -name 'T-Mix.component' -type d -print -quit)"
+          test -n "$VST3"
+          test -n "$AU"
+          ditto "$VST3" packaging/stage/T-Mix.vst3
+          ditto "$AU" packaging/stage/T-Mix.component
+          cp packaging/Install-T-Mix.command packaging/stage/
+          cp packaging/Uninstall-T-Mix.command packaging/stage/
+          cp packaging/INSTALL.txt packaging/stage/README-INSTALL.txt
+          chmod +x packaging/stage/*.command
+          hdiutil create -volname "T-Mix Installer" \
+            -srcfolder packaging/stage -ov -format UDZO \
+            dist/T-Mix-macOS.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: T-Mix-macOS-DMG
+          path: dist/T-Mix-macOS.dmg
