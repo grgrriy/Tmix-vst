@@ -1,0 +1,19 @@
+T-MIX — macOS INSTALLER
+
+1. Open Install-T-Mix.command from this disk image.
+2. If macOS blocks it, right-click the file and choose Open, then confirm.
+3. Restart FL Studio.
+4. Open Options > Manage plugins, ensure the VST3 scan path is enabled, and click Find plugins.
+5. Insert T-Mix on a mixer channel.
+
+The installer copies plugins into the current user's Library:
+  ~/Library/Audio/Plug-Ins/VST3
+  ~/Library/Audio/Plug-Ins/Components
+
+VST3 is the recommended format for FL Studio. AU is included for compatible hosts.
+
+This is a developer prototype. It is not notarized or code-signed by an identified
+Apple Developer account. macOS may show a security warning. Do not bypass warnings
+unless you trust the build and have inspected its source.
+
+Uninstall: run Uninstall-T-Mix.command from the mounted disk image.
